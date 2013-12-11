@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 @set_time_limit(5 * 60);
 
 // Uncomment this one to fake upload time
-// usleep(5000);
+//sleep(3);
 
 // Settings
 //$targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
@@ -63,6 +63,14 @@ $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
 // Chunking might be enabled
 $chunk = isset($_REQUEST["chunk"]) ? intval($_REQUEST["chunk"]) : 0;
 $chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0;
+
+// Clean the fileName for security reasons Gude
+//$fileName = preg_replace('/[^\w\._]+/', '_', $fileName);
+$prefixo = ''; //WORKAROUND, that it is...
+$ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));  //figures out the extension
+$uniqueName = md5($fileName . time());
+$fileName = $prefixo . $uniqueName.'.'.$ext; //generates random filename, then adds the file extension
+$filePath = $targetDir . DIRECTORY_SEPARATOR . '' . $fileName;
 
 
 // Remove old temp files	
@@ -119,6 +127,10 @@ while ($buff = fread($in, 4096)) {
 if (!$chunks || $chunk == $chunks - 1) {
 	// Strip the temp .part suffix off 
 	rename("{$filePath}.part", $filePath);
+
+	//gude's intervention
+	die('{"jsonrpc" : "2.0", "result" : "' . $fileName . '", "id" : "id"}');
+
 }
 
 // Return Success JSON-RPC response
